@@ -1,0 +1,54 @@
+plugins {
+    id "com.android.application"
+}
+
+def appName = project.findProperty("APP_NAME") ?: "PREDXWIN"
+def appUrl = project.findProperty("APP_URL") ?: "https://example.com"
+def appVersionName = (project.findProperty("APP_VERSION") ?: "1.0.0").toString().replaceAll("^[vV]", "")
+def appId = project.findProperty("APP_ID") ?: "com.predxwin.webapp"
+def appVersionCode = (project.findProperty("APP_VERSION_CODE") ?: "1").toString().toInteger()
+
+android {
+    namespace "com.predxwin.webapp"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId appId
+        minSdk 21
+        targetSdk 34
+        versionCode appVersionCode
+        versionName appVersionName
+        resValue "string", "app_name", appName
+        buildConfigField "String", "APP_URL", "\"${appUrl}\""
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("../keystore.jks")
+            storePassword "predxwin2026"
+            keyAlias "predxwin"
+            keyPassword "predxwin2026"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.webkit:webkit:1.11.0"
+}
