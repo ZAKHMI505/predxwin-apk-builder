@@ -1,4 +1,5 @@
 name: Build APK
+run-name: "${{ inputs.build_id }} ${{ inputs.app_name }}"
 
 on:
   workflow_dispatch:
@@ -74,6 +75,25 @@ jobs:
             -PAPP_VERSION="${{ github.event.inputs.app_version }}" \
             -PAPP_ID="${{ github.event.inputs.app_id }}" \
             -PAPP_VERSION_CODE="${{ github.run_number }}"
+
+      - name: Enable Android emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install and launch APK on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: |
+            adb install -r app/build/outputs/apk/release/app-release.apk
+            adb shell am start -W -n "${{ github.event.inputs.app_id }}/com.predxwin.webapp.MainActivity"
+            sleep 8
+            adb shell pidof "${{ github.event.inputs.app_id }}"
 
       - name: Rename APK
         run: |
