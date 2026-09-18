@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -57,6 +59,16 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
             }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                if (request.isForMainFrame()) showLoadError();
+            }
+
+            @Override
+            public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse response) {
+                if (request.isForMainFrame() && response.getStatusCode() >= 400) showLoadError();
+            }
         });
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -75,6 +87,14 @@ public class MainActivity extends AppCompatActivity {
         } else {
             webView.restoreState(savedInstanceState);
         }
+    }
+
+    private void showLoadError() {
+        String html = "<html><body style=\"font-family:sans-serif;text-align:center;padding:48px\">"
+                + "<h2>Website load nahi hui</h2><p>Internet check karke dobara koshish karein.</p>"
+                + "<button style=\"padding:14px 24px\" onclick=\"location.href='" + BuildConfig.APP_URL + "'\">Dobara kholein</button>"
+                + "</body></html>";
+        webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
     }
 
     @Override
